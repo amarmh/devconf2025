@@ -1,0 +1,27 @@
+- name: Update username in HTML and restart Nginx
+  hosts: all
+  gather_facts: false
+  become: yes
+
+  vars:
+    html_file_path: "/usr/share/nginx/html/index.html"
+    user_info: "{{ user_detail }}"
+
+  tasks:   
+    - name: debug
+      debug: 
+        msg: "{{ user_info }}" 
+
+    - name: Replace username in the HTML file
+      ansible.builtin.lineinfile:
+        path: "{{ html_file_path }}"
+        insertafter: 'setTimeout\(\(\) => addPlanet\(".*?"\), 2000\);'
+        line: 'setTimeout(() => addPlanet("{{ user_info }}"), 2000);'
+        state: present
+
+    - name: Restart Nginx
+      ansible.builtin.systemd:
+        name: nginx
+        state: restarted
+
+
